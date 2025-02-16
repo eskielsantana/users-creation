@@ -1,6 +1,9 @@
+import os
+
 from fixtures.credential_fixture import CredentialFixture
 from fixtures.permission_fixture import PermissionFixture
 from fixtures.role_fixture import RoleFixture, role_request_object
+from fixtures.setting_fixture import SettingFixture
 from fixtures.user_fixture import UserFixture
 
 
@@ -11,6 +14,7 @@ class UserService:
         self.permission_fixture = PermissionFixture()
         self.role_fixture = RoleFixture()
         self.user_fixture = UserFixture()
+        self.setting_fixture = SettingFixture()
 
     def find_permission(self, permission_name, permission_type, permissions):
         for permission in permissions:
@@ -31,21 +35,22 @@ class UserService:
             raise Exception(f"Permission or Permission Type not found! ({name}.{type})")
         return permission_id
 
-    def process_user(self, user, permissions, perms_list, c_or_r=False):
+    def process_user(self, user, permissions, perms_list):
         try:
-            # if self.user_fixture.user_exists(user):
-            #     print(f"A user with the email {user['email']} already exists so this user was skipped!")
-            #     return
-            #
-            # # Create the ROLE
-            # role = self.role_fixture.create(f"{user['first_name']} {user['last_name']}")
-            # if role is None:
-            #     raise Exception("Role wasn't created properly!")
-            #
-            # # Create the USER
-            # new_user = self.user_fixture.create(user['email'], user['first_name'], user['last_name'], role['id'])
-            # if new_user is None:
-            #     raise Exception("User wasn't created properly!")
+            if self.user_fixture.user_exists(user):
+                print(f"A user with the email {user['email']} already exists so this user was skipped!")
+                return
+
+            # Create the ROLE
+            role = self.role_fixture.create(f"{user['first_name']} {user['last_name']}")
+            if role is None:
+                raise Exception("Role wasn't created properly!")
+
+            # Create the USER
+            new_user = self.user_fixture.create(user['email'], user['first_name'], user['last_name'],
+                                                os.getenv('DEFAULT_PASS'), role['id'])
+            if new_user is None:
+                raise Exception("User wasn't created properly!")
 
             role = {
                 'id': 118
@@ -69,3 +74,12 @@ class UserService:
         except Exception as error:
             print('Error in process_user:', error)
             raise
+
+    def process_user_settings(self, user_id, setting):
+        try:
+            self.setting_fixture.set(user_id, setting)
+        except Exception as error:
+            print('Error in process_user_settings:', error)
+            raise
+
+

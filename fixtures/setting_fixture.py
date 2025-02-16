@@ -1,44 +1,51 @@
-import requests
 import json
+
+import requests
+
 from fixtures.api_fixture import ApiFixture
 
 
-def role_request_object(role_id, permission_id):
+def setting_request_object(setting_name, user_id, value):
     return {
-        'auth_instance_id': role_id,
-        'has_permission': True,
-        'permission_id': permission_id
+        'name': setting_name,
+        'user': user_id,
+        'value': 'True' if value else 'False'
     }
 
 
 class SettingFixture(ApiFixture):
-    endpoint = 'api/v1/roles/'
+    endpoint = 'api/v1/global_settings/'
 
     def __init__(self):
         super().__init__(self.endpoint)
 
     def get_user_settings(self, user_id):
-        url = f"{self.request_url}?segment={segment}&regions={region}"
+        url = f"{self.request_url}?filter_expression=user eq {user_id}"
 
-        response = requests.get(url, headers=self.headers)
+        response = super().get(url)
+        results = response.get('results', [])
 
-        if response.status_code != 200:
-            raise Exception(f"Request failed with status code {response.status_code}")
-
-        return response.json()
+        return results
 
     def user_has_setting(self, user_id, setting):
-        all_setings = self.get_user_settings(user_id)
+        all_settings = self.get_user_settings(user_id)
 
-    def set(self, user_name, setting, value=True):
-        body = {
-            'name': f"{user_name} DONT CHANGE!",
-            'description': 'This role has been created for automation tests and must not be changed or deleted!'
-        }
+        for user_setting in all_settings:
+            if user_setting.get('name') == setting:
+                return user_setting
+        return {}
 
-        response = requests.post(self.request_url, headers=self.headers, data=json.dumps(body))
+    def set(self, user_id, setting_name, value=True):
+        setting = self.user_has_setting(user_id, setting_name)
+        if setting:
+            if setting.get('value') != value:
+                body = setting_request_object(setting_name, user_id, value)
+                response = super().put(setting.get('id'), json.dumps(body))
+            else:
+                print(f"Setting {setting.get('name')} already has value {setting.get('value')}")
+                return {}
+        else:
+            body = setting_request_object(setting_name, user_id, value)
+            response = super().post(self.request_url, json.dumps(body))
 
-        if response.status_code != 201:
-            raise Exception(f"Request failed with status code {response.status_code}")
-
-        return response.json()
+        return response

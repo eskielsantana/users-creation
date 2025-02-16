@@ -1,5 +1,3 @@
-import requests
-import json
 from fixtures.api_fixture import ApiFixture
 
 
@@ -23,9 +21,6 @@ class RoleFixture(ApiFixture):
             'description': 'This role has been created for automation tests and must not be changed or deleted!'
         }
 
-        response = requests.post(self.request_url, headers=self.headers, data=json.dumps(body))
+        response = super().post(self.request_url, body)
 
-        if response.status_code != 201:
-            raise Exception(f"Request failed with status code {response.status_code}")
-
-        return response.json()
+        return response

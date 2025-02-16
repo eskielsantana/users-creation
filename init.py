@@ -24,7 +24,8 @@ class Main:
         self.user_service = UserService()
         self.credential_fixture.check_if_credential_is_valid()
 
-        self.test_permission_fixture()
+        # self.test_permission_fixture()
+        self.test_setting_fixture()
 
     def test_permission_fixture(self):
         all_perms = self.permission_fixture.find_all(1, 20)
@@ -35,6 +36,10 @@ class Main:
             {'first_name': 'Eze', 'last_name': 'Test3', 'email': 'eze.test3@automation.com'},
             TEST_USER_WITH_NO_FINANCIAL_PERMS,
             all_perms)
+
+    def test_setting_fixture(self):
+        user_id = 118
+        self.user_service.setting_fixture.set(user_id, 'SHOW_GRID_LAYOUT_UPDATES', True)
 
     @staticmethod
     def perm_enabled(name):

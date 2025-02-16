@@ -1,7 +1,5 @@
 import json
 
-import requests
-
 from fixtures.api_fixture import ApiFixture
 
 
@@ -16,12 +14,9 @@ class PermissionFixture(ApiFixture):
 
         response = super().get(url)
 
-        return response.json()
+        return response
 
     def submit(self, body):
-        response = requests.post(self.request_url, headers=self.headers, data=json.dumps(body))
-
-        if response.status_code != 200:
-            raise Exception(f"Request failed with status code {response.status_code}")
+        response = super().post(self.request_url, json.dumps(body))
 
         return response
