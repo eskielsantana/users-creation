@@ -5,6 +5,7 @@ from fixtures.permission_fixture import PermissionFixture
 from fixtures.role_fixture import RoleFixture, role_request_object
 from fixtures.setting_fixture import SettingFixture
 from fixtures.user_fixture import UserFixture
+from services.random_user_service import RandomUserService
 
 
 class UserService:
@@ -15,6 +16,7 @@ class UserService:
         self.role_fixture = RoleFixture()
         self.user_fixture = UserFixture()
         self.setting_fixture = SettingFixture()
+        self.random_user_service = RandomUserService()
 
     def find_permission(self, permission_name, permission_type, permissions):
         for permission in permissions:
@@ -36,6 +38,8 @@ class UserService:
         return permission_id
 
     def process_user(self, user, permissions, perms_list):
+        user = user if user else self.random_user_service.create()
+
         try:
             if self.user_fixture.user_exists(user):
                 print(f"A user with the email {user['email']} already exists so this user was skipped!")
@@ -46,15 +50,13 @@ class UserService:
             if role is None:
                 raise Exception("Role wasn't created properly!")
 
+            user.setdefault('roles', []).append(role['id'])
+            user.setdefault('password', os.getenv('DEFAULT_PASS'))
+
             # Create the USER
-            new_user = self.user_fixture.create(user['email'], user['first_name'], user['last_name'],
-                                                os.getenv('DEFAULT_PASS'), role['id'])
+            new_user = self.user_fixture.create(user)
             if new_user is None:
                 raise Exception("User wasn't created properly!")
-
-            role = {
-                'id': 118
-            }
 
             # Assemble a list of permissions to be assigned
             perms_to_link = []

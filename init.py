@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 from fixtures.credential_fixture import CredentialFixture
 from fixtures.permission_fixture import PermissionFixture
+from services.random_user_service import RandomUserService
 from services.user_service import UserService
 
 
@@ -22,10 +23,12 @@ class Main:
         self.credential_fixture = CredentialFixture()
         self.permission_fixture = PermissionFixture()
         self.user_service = UserService()
+        self.random_user_service = RandomUserService()
         self.credential_fixture.check_if_credential_is_valid()
 
+        self.test_random_user_creation()
         # self.test_permission_fixture()
-        self.test_setting_fixture()
+        # self.test_setting_fixture()
 
     def test_permission_fixture(self):
         all_perms = self.permission_fixture.find_all(1, 20)
@@ -40,6 +43,11 @@ class Main:
     def test_setting_fixture(self):
         user_id = 118
         self.user_service.setting_fixture.set(user_id, 'SHOW_GRID_LAYOUT_UPDATES', True)
+
+    def test_random_user_creation(self):
+        a = self.random_user_service.create()
+
+        print(a)
 
     @staticmethod
     def perm_enabled(name):

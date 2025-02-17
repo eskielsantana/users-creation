@@ -9,6 +9,11 @@ class UserFixture(ApiFixture):
     def __init__(self):
         super().__init__(self.endpoint)
 
+    def create(self, user):
+        response = super().post(self.request_url, json.dumps(user))
+
+        return response
+
     def create(self, email, first_name, last_name, password, role_id):
         body = {
             'email': email,
@@ -18,7 +23,7 @@ class UserFixture(ApiFixture):
             'roles': [role_id]
         }
 
-        response = super().post(self.request_url, json.dumps(body))
+        response = self.create(body)
 
         return response
 
